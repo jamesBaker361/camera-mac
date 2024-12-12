@@ -28,7 +28,7 @@ def patient_print(start_event,step,n=5,name="thread"):
 
     
 start_event = threading.Event()
-step=0.1
+step=0.5
 for k in range(4):
     name=f"thread_{k}"
     
@@ -36,4 +36,8 @@ for k in range(4):
     #threading.Thread(target=time_stuff,).start()
 
 time.sleep(2)
+before=time.time()
 start_event.set()
+after=time.time()
+
+print(f"before: {before} elapsed {after-before}")
