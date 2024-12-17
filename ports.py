@@ -5,6 +5,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 from datetime import datetime
 import threading
+import csv
 
 def extract_timestamp(image_path):
     try:
@@ -56,6 +57,24 @@ def get_camera_ports():
         print(f"An error occurred: {e}")
         return []
 
+def clear_memory(ports):
+    for port in ports:
+        try:
+            subprocess.run(["gphoto2", "--port",port,"--delete-all-files"],check=True)
+            print(f"cleaned camera {port}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred with {port}: {e}")
+
+def default_configs(ports,file_path="config_list.csv"):
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        config=[row for row in reader]
+    for port in ports:
+        for [prop,value] in config:
+            try:
+                subprocess.run(["gphoto2","--port", port, "--set-config", f"{prop}={value}"],check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Error occurred with {port}: {e}")
 
 
 from concurrent.futures import ThreadPoolExecutor
@@ -67,6 +86,13 @@ def take_photo_from_camera(port, filename):
     except subprocess.CalledProcessError as e:
         print(f"Error occurred with {port}: {e}")
 
+def reset_all(ports):
+    for port in ports:
+        try:
+            #subprocess.run(["gphoto2", "--port", port, "--reset"], check=True)
+            print(f"reset {port} ")
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred with {port}: {e}")
 
 
 def take_frame_from_camera(port, filename):
@@ -155,9 +181,9 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
     start_event.wait()
     start=time.time()
     print(camera_name," starting at ",start)
-    command=["gphoto2", "--port", port, "--capture-image-and-download", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
-    command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log"])
-    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log","--wait-event=2s"],cwd=cwd)
+    #command=["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
+    #command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log"])
+    subprocess.run(["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log","--wait-event=2s"],cwd=cwd)
     print(f"Frame taken from {port} and saved as {camera_name} at {time.time()}")
     '''while n_frames>0:
         now=time.time()
@@ -173,6 +199,9 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
             except subprocess.CalledProcessError as e:
                 print(f"Error occurred with {port}: {e}")
             n_frames-=1'''
+    #subprocess.run(["gphoto2","--port", port, "--get-all-files"],check=True)
+
+
 if __name__=="__main__":
     '''threads=[]
     start_event = threading.Event()
@@ -191,6 +220,10 @@ if __name__=="__main__":
     start_event = threading.Event()
     step=0.5
     ports=get_camera_ports()
+    print(ports)
+    reset_all(ports)
+    clear_memory(ports)
+    default_configs(ports)
     #with ThreadPoolExecutor() as executor:
     threads=[]
     for n,port in enumerate(ports):
