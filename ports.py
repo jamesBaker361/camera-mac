@@ -131,6 +131,7 @@ def warmup(ports):
         print(f"elpased {time.time()-start} secponds")
 
 def thread_for_each_camera(start_event,time_list,ports):
+    duration=10
     for n,port in enumerate(ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
@@ -138,11 +139,22 @@ def thread_for_each_camera(start_event,time_list,ports):
         camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
         #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
         #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
-        threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+        #threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+        threads.append(threading.Thread(target=capture_video,args=(port,duration,cwd,camera_name,start_event)))
     for t in threads:
         t.start()
     time.sleep(2)
     start_event.set()
+
+def capture_video(port,duration,cwd,camera_name,start_event):
+    start_event.wait()
+    start=time.time()
+    print(camera_name," starting at ",start)
+    subprocess.run(["gphoto2", "--port", port,"--capture-movie",str(duration)],cwd=cwd)
+    end=time.time()
+    print(f"{camera_name} video ended at {end} elapsed {end-start}")
+    subprocess.run(["gphoto2","--port", port, "--get-all-files"],cwd=cwd)
+
 
 if __name__=="__main__":
 
@@ -160,7 +172,7 @@ if __name__=="__main__":
     start_time=time.time()
     time_list=[start_time+ x for x in range(5,10)]
     print(time_list)
-    #thread_for_each_camera(start_event,time_list,ports)
+    thread_for_each_camera(start_event,time_list,ports)
             #take_frame_from_camera(port,filename)
             #time.sleep(4)
             #filename = f"camera_{n+1}_video.mp4"
