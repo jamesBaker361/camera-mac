@@ -183,39 +183,13 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
     print(camera_name," starting at ",start)
     #command=["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
     #command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log"])
-    subprocess.run(["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log","--wait-event=2s"],cwd=cwd)
+    subprocess.run(["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=5","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log","--wait-event=2s"],cwd=cwd)
     print(f"Frame taken from {port} and saved as {camera_name} at {time.time()}")
-    '''while n_frames>0:
-        now=time.time()
-        if now>=start:
-            start+=step
-            filename=f"img_{camera_name}_{n_frames}.jpg"
-            try:
-                print(f"{camera_name} beginning photo {n_frames} at {time.time()}")
-                subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", filename, "-q","--force-overwrite"],cwd=cwd)
-                timestamp=datetime.now()
-                #print(f"Frame taken from {port} and saved as {filename} at {timestamp}")
-                
-            except subprocess.CalledProcessError as e:
-                print(f"Error occurred with {port}: {e}")
-            n_frames-=1'''
-    #subprocess.run(["gphoto2","--port", port, "--get-all-files"],check=True)
+    subprocess.run(["gphoto2","--port", port, "--get-all-files"],check=True)
 
 
 if __name__=="__main__":
-    '''threads=[]
-    start_event = threading.Event()
-    ports=get_camera_ports()
-    for n,port in enumerate(ports):
-        
-        filename= f"camera_{n}.mp4" #f"img_{n}_{k}.jpg"
-        cwd=f"imgdir_{n}"
-        os.makedirs(cwd,exist_ok=True)
-        threads.append(threading.Thread(target=capture_video_from_camera_event,args=(start_event,port,filename,10,cwd)))
-    for t in threads:
-        t.start()
-    time.sleep(1)
-    start_event.set()'''
+
     #subprocess.run(["gphoto2", "--reset"])
     start_event = threading.Event()
     step=0.5
@@ -229,7 +203,7 @@ if __name__=="__main__":
     for n,port in enumerate(ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
-        n_frames=3
+        n_frames=2
         camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
         #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
         threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
