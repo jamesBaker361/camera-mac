@@ -126,14 +126,15 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
 
 def warmup(ports):
     for port in ports:
+        start=time.time()
         subprocess.run(["gphoto2", "--port", port, "--capture-image"])
+        print(f"elpased {time.time()-start} secponds")
 
 def thread_for_each_camera(start_event,time_list,ports):
     for n,port in enumerate(ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
         n_frames=10
-        print(n_frames)
         camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
         #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
         #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
@@ -159,7 +160,7 @@ if __name__=="__main__":
     start_time=time.time()
     time_list=[start_time+ x for x in range(5,10)]
     print(time_list)
-    thread_for_each_camera(start_event,time_list,ports)
+    #thread_for_each_camera(start_event,time_list,ports)
             #take_frame_from_camera(port,filename)
             #time.sleep(4)
             #filename = f"camera_{n+1}_video.mp4"
