@@ -100,7 +100,7 @@ def photos_from_camera_time_list(port,camera_name,time_list,cwd):
     while i<len(time_list):
         while time.time() < time_list[i]:
             pass
-        subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download","-filename" ,f"img_{i}.jpg"],cwd=cwd)
+        subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download","--filename" ,f"img_{i}.jpg","--force-overwrite"],cwd=cwd)
         i+=1
         print(f"image {i} for {camera_name} saved at {time.time()}")
 
@@ -122,6 +122,8 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
     print(f"Frames taken from {port} and saved as {camera_name} at {time.time()}")
     #subprocess.run(["gphoto2","--port", port, "--get-all-files"],check=True,cwd=cwd)
 
+#def capture_video(port)
+
 def warmup(ports):
     for port in ports:
         subprocess.run(["gphoto2", "--port", port, "--capture-image"])
@@ -136,21 +138,21 @@ if __name__=="__main__":
     reset_all(ports)
     warmup(ports)
     clear_memory(ports)
-    #default_configs(ports)
+    default_configs(ports)
     #with ThreadPoolExecutor() as executor:
     threads=[]
     start_time=time.time()
-    time_list=[start_time+ x for x in range(2,8)]
+    time_list=[start_time+ x for x in range(5,10)]
     print(time_list)
-    for n,port in enumerate(ports):
+    for n,port in enumerate(ports+ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
         n_frames=10
         print(n_frames)
         camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
         #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
-        threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
-        #threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+        #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
+        threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
             #take_frame_from_camera(port,filename)
             #time.sleep(4)
             #filename = f"camera_{n+1}_video.mp4"
