@@ -128,6 +128,21 @@ def warmup(ports):
     for port in ports:
         subprocess.run(["gphoto2", "--port", port, "--capture-image"])
 
+def thread_for_each_camera(start_event,time_list,ports):
+    for n,port in enumerate(ports):
+        cwd=f"imgdir_{n}"
+        os.makedirs(cwd,exist_ok=True)
+        n_frames=10
+        print(n_frames)
+        camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
+        #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
+        #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
+        threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+    for t in threads:
+        t.start()
+    time.sleep(2)
+    start_event.set()
+
 if __name__=="__main__":
 
     #subprocess.run(["gphoto2", "--reset"])
@@ -138,30 +153,19 @@ if __name__=="__main__":
     reset_all(ports)
     warmup(ports)
     clear_memory(ports)
-    default_configs(ports)
+    #default_configs(ports)
     #with ThreadPoolExecutor() as executor:
     threads=[]
     start_time=time.time()
     time_list=[start_time+ x for x in range(5,10)]
     print(time_list)
-    for n,port in enumerate(ports+ports):
-        cwd=f"imgdir_{n}"
-        os.makedirs(cwd,exist_ok=True)
-        n_frames=10
-        print(n_frames)
-        camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
-        #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
-        #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
-        threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+    thread_for_each_camera(start_event,time_list,ports)
             #take_frame_from_camera(port,filename)
             #time.sleep(4)
             #filename = f"camera_{n+1}_video.mp4"
         #executor.submit(capture_video_from_camera, port, filename)
 
         #take_photo_from_camera(port,f"img_{n}.png")
-    for t in threads:
-        t.start()
-    time.sleep(2)
-    start_event.set()
+    
 
     #SOMETIMES IT TIMES OUT AND YOU LITERALLY JUST NEED TI PLUG AND UNPLUG IT AGAIN which is stupid ik
