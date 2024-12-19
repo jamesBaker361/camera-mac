@@ -6,6 +6,7 @@ from PIL.ExifTags import TAGS
 from datetime import datetime
 import threading
 import csv
+import numpy as np
 
 def extract_timestamp(image_path):
     try:
@@ -97,12 +98,18 @@ def reset_all(ports):
 
 def photos_from_camera_time_list(port,camera_name,time_list,cwd):
     i=0
+    actual_times=[]
+    start=time.time()
     while i<len(time_list):
         while time.time() < time_list[i]:
             pass
         subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download","--filename" ,f"img_{i}.jpg","--force-overwrite"],cwd=cwd)
         i+=1
-        print(f"image {i} for {camera_name} saved at {time.time()}")
+        later=time.time()
+        print(f"image {i} for {camera_name} saved at {later}")
+        actual_times.append([later-start])
+        start=later
+    print(f"{camera_name}, std dev={np.std(actual_times)} mean {np.mean(actual_times)}")
 
 def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_name,n_frames,cwd):
     #print("called fucntion with  ",camera_name)
@@ -112,14 +119,16 @@ def take_multiple_photos_from_camera_with_event(start_event,step,port,camera_nam
     file_exists = any(camera_name in filename for filename in files_in_dir)
     if file_exists:
         return
-    
+    timestep="2ms"
     start_event.wait()
     start=time.time()
     print(camera_name," starting at ",start)
     #command=["gphoto2", "--port", port, "--capture-image", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
     #command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log"])
-    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=0.5","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log","--wait-event=1s"],cwd=cwd)
-    print(f"Frames taken from {port} and saved as {camera_name} at {time.time()}")
+    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", camera_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}",f"--interval={timestep}","--debug" ,f"--debug-logfile=gphoto-debug-{camera_name}.log",f"--wait-event={timestep}"],cwd=cwd)
+    later=time.time()
+    print(f"Frames taken from {port} and saved as {camera_name} at {later}")
+
     #subprocess.run(["gphoto2","--port", port, "--get-all-files"],check=True,cwd=cwd)
 
 #def capture_video(port)
@@ -138,12 +147,12 @@ def thread_for_each_camera(start_event,time_list,ports):
         n_frames=10
         camera_name= f"camera_{n}" #f"img_{n}_{k}.jpg"
         #executor.submit(take_multiple_photos_from_camera_with_event, start_event, step, port, camera_name,n_frames)
-        #threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
-        threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
+        threads.append(threading.Thread(target=take_multiple_photos_from_camera_with_event,args=(start_event, step, port, camera_name,n_frames,cwd)))
+        #threads.append(threading.Thread(target=photos_from_camera_time_list,args=(port,camera_name,time_list,cwd)))
         #threads.append(threading.Thread(target=capture_video,args=(port,duration,cwd,camera_name,start_event)))
     for t in threads:
         t.start()
-    time.sleep(2)
+    time.sleep(10)
     start_event.set()
 
 def capture_video(port,duration,cwd,camera_name,start_event):
@@ -170,7 +179,7 @@ if __name__=="__main__":
     #with ThreadPoolExecutor() as executor:
     threads=[]
     start_time=time.time()
-    time_list=[start_time+ x for x in range(3,12,3)]
+    time_list=[start_time+10+ x/2 for x in range(10)]
     print(time_list)
     thread_for_each_camera(start_event,time_list,ports)
             #take_frame_from_camera(port,filename)
