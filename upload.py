@@ -37,4 +37,3 @@ for subject_name in subject_set:
             for k in range(4):
                 map[f"camera_{k}"].append(PIL.Image.open(f"imgdir_{k}/{subject_name}_{formatted}.jpg"))
 
-print(map)

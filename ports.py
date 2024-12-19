@@ -156,7 +156,7 @@ def thread_for_each_camera(start_event,timestep,ports,subject_name,n_frames):
         #threads.append(threading.Thread(target=capture_video,args=(port,duration,cwd,subject_name,start_event)))
     for t in threads:
         t.start()
-    time.sleep(10)
+    time.sleep(5)
     start_event.set()
 
 def capture_video(port,duration,cwd,subject_name,start_event):
@@ -174,7 +174,7 @@ if __name__=="__main__":
     #subprocess.run(["gphoto2", "--reset"])
     args=parser.parse_args()
     start_event = threading.Event()
-    step=0.5
+    time.sleep(10)
     ports=get_camera_ports()
     print(ports)
     reset_all(ports)
