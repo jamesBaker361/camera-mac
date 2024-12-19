@@ -130,7 +130,7 @@ def take_multiple_photos_from_camera_with_event(start_event,timestep,port,subjec
     print(subject_name," starting at ",start)
     #command=["gphoto2", "--port", port, "--capture-image", "--filename", subject_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
     #command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log"])
-    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", subject_name+"_-%04n.jpg","--force-overwrite" , f"--frames={n_frames}",f"--interval={timestep}","--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log",f"--wait-event={timestep}"],cwd=cwd)
+    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", subject_name+"_%04n.jpg","--force-overwrite" , f"--frames={n_frames}",f"--interval={timestep}","--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log",f"--wait-event={timestep}"],cwd=cwd)
     later=time.time()
     print(f"Frames taken from {port} and saved as {subject_name} at {later}")
 
@@ -145,7 +145,7 @@ def warmup(ports):
         print(f"elpased {time.time()-start} secponds")
 
 def thread_for_each_camera(start_event,timestep,ports,subject_name,n_frames):
-    duration=15
+    
     for n,port in enumerate(ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
@@ -180,12 +180,7 @@ if __name__=="__main__":
     reset_all(ports)
     warmup(ports)
     clear_memory(ports)
-    #default_configs(ports)
-    #with ThreadPoolExecutor() as executor:
-    threads=[]
-    start_time=time.time()
-    time_list=[start_time+10+ x/2 for x in range(10)]
-    print(time_list)
+
     thread_for_each_camera(start_event,args.timestep,ports,args.subject_name,args.n_frames)
             #take_frame_from_camera(port,filename)
             #time.sleep(4)
