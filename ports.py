@@ -130,7 +130,7 @@ def take_multiple_photos_from_camera_with_event(start_event,timestep,port,subjec
     print(subject_name," starting at ",start)
     #command=["gphoto2", "--port", port, "--capture-image", "--filename", subject_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}","--interval=2"]
     #command.append(["--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log"])
-    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", subject_name+"_image-%03n.jpg","--force-overwrite" , f"--frames={n_frames}",f"--interval={timestep}","--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log",f"--wait-event={timestep}"],cwd=cwd)
+    subprocess.run(["gphoto2", "--port", port, "--capture-image-and-download", "--filename", subject_name+"_-%04n.jpg","--force-overwrite" , f"--frames={n_frames}",f"--interval={timestep}","--debug" ,f"--debug-logfile=gphoto-debug-{subject_name}.log",f"--wait-event={timestep}"],cwd=cwd)
     later=time.time()
     print(f"Frames taken from {port} and saved as {subject_name} at {later}")
 
