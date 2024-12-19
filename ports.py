@@ -145,7 +145,7 @@ def warmup(ports):
         print(f"elpased {time.time()-start} secponds")
 
 def thread_for_each_camera(start_event,timestep,ports,subject_name,n_frames):
-    
+    threads=[]
     for n,port in enumerate(ports):
         cwd=f"imgdir_{n}"
         os.makedirs(cwd,exist_ok=True)
