@@ -23,16 +23,20 @@ if __name__=='__main__':
 
     directory=f"{base_dir}imgdir_1"
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
-    print(files)
+    #print(files)
 
     subject_set=set()
     for f in files:
-        name=f.split("_")[0]
+        name='_'.join(f.split("_")[:-1])
         subject_set.add(name)
 
-    def all_exist(files):
+    print("subjects",subject_set)
+
+    def all_exist(files,verbose=False):
         for f in files:
             if not os.path.exists(f):
+                if verbose:
+                    print(f"{f} does not exist")
                 return False
         return True
 
@@ -40,10 +44,12 @@ if __name__=='__main__':
         for n in range(0,9999):
             formatted = f"{n:04}"
             files=[f"{base_dir}imgdir_{k}/{subject_name}_{formatted}.jpg" for k in range(4)]
+
             if all_exist(files):
                 map["subject_name"].append(subject_name)
                 map["timestamp"].append(formatted)
                 for k in range(4):
                     map[f"camera_{k}"].append(PIL.Image.open(f"{base_dir}imgdir_{k}/{subject_name}_{formatted}.jpg"))
 
+    print("len ",len(map))
     Dataset.from_dict(map).push_to_hub("jlbaker361/raw-james")
